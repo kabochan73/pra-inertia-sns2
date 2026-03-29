@@ -1,0 +1,42 @@
+name: Run Tests
+
+on:
+  push:                # pushしたら実行
+  pull_request:        # PRを作ったら実行
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # リポジトリのコードをチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # PHPのセットアップ
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_sqlite, sqlite3
+          coverage: none
+
+      # Composerの依存パッケージをインストール
+      - name: Install dependencies
+        working-directory: src
+        run: composer install --no-interaction --prefer-dist
+
+      # .envファイルを作成
+      - name: Copy .env
+        working-directory: src
+        run: cp .env.example .env
+
+      # アプリケーションキーを生成
+      - name: Generate app key
+        working-directory: src
+        run: php artisan key:generate
+
+      # テストを実行（SQLiteのインメモリDBを使用）
+      - name: Run tests
+        working-directory: src
+        run: php artisan test

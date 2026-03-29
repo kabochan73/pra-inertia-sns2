@@ -42,13 +42,13 @@ class PostService
             'review'         => $post->review,
             'rating'         => $post->rating,
             'likes_count'    => $post->likes_count,
-            'liked'          => $post->likes()->where('user_id', Auth::id())->exists(), // 自分がいいね済みか
+            'liked'          => Auth::check() && $post->likes()->where('user_id', Auth::id())->exists(), // 自分がいいね済みか（未ログインはfalse）
             'user'           => [
                 'id'   => $post->user->id,
                 'name' => $post->user->name,
             ],
             'created_at' => $post->created_at->diffForHumans(), // 「3分前」のような表示
-            'is_mine'    => $post->user_id === Auth::id(),       // 自分の投稿かどうか
+            'is_mine'    => Auth::check() && $post->user_id === Auth::id(), // 自分の投稿かどうか（未ログインはfalse）
         ];
     }
 }
