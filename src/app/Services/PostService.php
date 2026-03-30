@@ -5,28 +5,30 @@ namespace App\Services;
 use App\Http\Requests\StorePostRequest;
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class PostService
 {
-    // タイムライン用の投稿一覧を取得
+    // タイムライン用の投稿一覧を取得（ページネーション対応）
     // $query が渡された場合はタイトルまたは著者名で絞り込む
-    public function getTimeline(?string $query = null): Collection
+    public function getTimeline(?string $query = null): LengthAwarePaginator
     {
         return Post::with('user')
             ->withCount('likes')
             ->when($query, function ($q) use ($query) {
                 // LIKE 検索: タイトルか著者名のどちらかにヒットすれば表示
-                // where + orWhere をグループ化して他の条件と混在しないようにする
                 $q->where(function ($q) use ($query) {
                     $q->where('book_title', 'like', "%{$query}%")
                       ->orWhere('book_author', 'like', "%{$query}%");
                 });
             })
             ->latest()
-            ->get()
-            ->map(fn(Post $post) => $this->formatPost($post));
+            ->paginate(10) // 1ページあたり10件
+            ->through(fn(Post $post) => $this->formatPost($post));
+            // through(): paginate() の結果を map() のように変換しつつ
+            // ページネーションのメタ情報（総件数・現在ページ等）を保持する
     }
 
     // 特定ユーザーの投稿一覧を取得（プロフィールページ用）

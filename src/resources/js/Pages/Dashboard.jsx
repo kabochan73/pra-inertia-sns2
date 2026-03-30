@@ -7,43 +7,49 @@ import { useEffect, useState } from 'react';
 /**
  * ダッシュボードページ（タイムライン）
  *
- * @param {object[]} posts - 投稿一覧（検索結果 or 全件）
- * @param {string}   query - 現在の検索キーワード（未検索時は空文字）
+ * @param {object} posts - ページネーション付き投稿データ
+ *                         { data: [...], meta: { current_page, last_page, total, ... } }
+ * @param {string} query - 現在の検索キーワード（未検索時は空文字）
  */
 export default function Dashboard({ posts, query }) {
-    // ログイン中のユーザーを取得（未ログインなら null）
     const { auth } = usePage().props;
     const isLoggedIn = auth.user !== null;
 
-    // 検索フォームの入力値（サーバーから返ってきた query で初期化）
     const [searchInput, setSearchInput] = useState(query);
-
-    // ログイン済みと未ログインでレイアウトを切り替える
     const Layout = isLoggedIn ? AuthenticatedLayout : PublicLayout;
 
-    // デバウンス: searchInput が変わってから 500ms 後にリクエストを送る
+    // デバウンス: 入力が止まってから 500ms 後に検索リクエストを送る
     useEffect(() => {
-        // タイマーをセット
         const timer = setTimeout(() => {
-            // 入力値が現在の検索クエリと同じなら何もしない（初回レンダリング時の無駄なリクエストを防ぐ）
             if (searchInput === query) return;
 
             router.get(route('dashboard'),
-                // 空文字のときはパラメータなし（URLを ?q= にしない）
                 searchInput ? { q: searchInput } : {},
                 { preserveState: true },
             );
-        }, 500); // 500ms 待つ
+        }, 500);
 
-        // 次の入力が来たら前のタイマーをキャンセル
-        // これにより「最後の入力から 500ms 後」だけリクエストが飛ぶ
         return () => clearTimeout(timer);
-    }, [searchInput]); // searchInput が変わるたびに実行
+    }, [searchInput]);
 
-    // 検索をリセットして全件表示に戻す
+    // 検索クリア
     const handleReset = () => {
         setSearchInput('');
     };
+
+    // ページを移動する（検索クエリを維持したまま）
+    const handlePageChange = (page) => {
+        router.get(route('dashboard'),
+            // 検索中なら q パラメータも一緒に送る
+            { ...(query ? { q: query } : {}), page },
+            { preserveState: true },
+        );
+    };
+
+    // ページネーションのメタ情報
+    // Inertia は LengthAwarePaginator をフラットな構造に変換するため
+    // posts.meta ではなく posts 直下に current_page 等が入る
+    const { current_page, last_page, total } = posts;
 
     return (
         <Layout
@@ -58,7 +64,7 @@ export default function Dashboard({ posts, query }) {
             <div className="py-10">
                 <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 space-y-6">
 
-                    {/* 検索フォーム（入力のたびに自動検索・デバウンスあり） */}
+                    {/* 検索フォーム */}
                     <div className="flex gap-2">
                         <input
                             type="text"
@@ -67,7 +73,6 @@ export default function Dashboard({ posts, query }) {
                             placeholder="タイトルや著者名で検索..."
                             className="block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm"
                         />
-                        {/* 入力があるときだけクリアボタンを表示 */}
                         {searchInput && (
                             <button
                                 type="button"
@@ -79,15 +84,16 @@ export default function Dashboard({ posts, query }) {
                         )}
                     </div>
 
-                    {/* 検索中の場合は件数を表示 */}
+                    {/* 検索中は件数を表示 */}
                     {query && (
                         <p className="text-sm text-gray-500">
-                            「{query}」の検索結果: {posts.length} 件
+                            「{query}」の検索結果: {total} 件
                         </p>
                     )}
 
                     {/* 投稿一覧 */}
-                    {posts.length === 0 ? (
+                    {/* Inertia はページネーターの投稿データを posts.data に入れる */}
+                    {posts.data.length === 0 ? (
                         <div className="text-center py-16 text-gray-400">
                             <p className="text-5xl mb-4">📚</p>
                             <p className="text-lg font-medium">
@@ -103,9 +109,50 @@ export default function Dashboard({ posts, query }) {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {posts.map((post) => (
+                            {posts.data.map((post) => (
                                 <PostCard key={post.id} post={post} />
                             ))}
+                        </div>
+                    )}
+
+                    {/* ページネーション（2ページ以上あるときだけ表示） */}
+                    {last_page > 1 && (
+                        <div className="flex items-center justify-center gap-1 pt-2">
+
+                            {/* 前のページへ */}
+                            <button
+                                onClick={() => handlePageChange(current_page - 1)}
+                                disabled={current_page === 1} // 1ページ目は無効
+                                className="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                ← 前へ
+                            </button>
+
+                            {/* ページ番号ボタン */}
+                            {Array.from({ length: last_page }, (_, i) => i + 1).map((page) => (
+                                <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`px-3 py-1.5 text-sm rounded-md border transition-colors ${
+                                        page === current_page
+                                            // 現在のページは強調表示
+                                            ? 'bg-indigo-600 text-white border-indigo-600'
+                                            : 'border-gray-300 text-gray-600 hover:bg-gray-50'
+                                    }`}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+
+                            {/* 次のページへ */}
+                            <button
+                                onClick={() => handlePageChange(current_page + 1)}
+                                disabled={current_page === last_page} // 最終ページは無効
+                                className="px-3 py-1.5 text-sm rounded-md border border-gray-300 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            >
+                                次へ →
+                            </button>
+
                         </div>
                     )}
 

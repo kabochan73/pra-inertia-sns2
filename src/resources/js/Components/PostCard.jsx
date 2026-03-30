@@ -1,4 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 /**
  * 投稿カードコンポーネント
@@ -11,8 +12,15 @@ export default function PostCard({ post }) {
     const { auth } = usePage().props;
     const isLoggedIn = auth.user !== null;
 
+    // アニメーション再生中かどうかのフラグ
+    const [isAnimating, setIsAnimating] = useState(false);
+
     // いいねボタンを押したときの処理
     const handleLike = () => {
+        // アニメーションを開始し、300ms 後にリセット
+        setIsAnimating(true);
+        setTimeout(() => setIsAnimating(false), 300);
+
         if (post.liked) {
             // すでにいいね済み → DELETE /posts/:id/likes でいいね解除
             router.delete(route('likes.destroy', post.id));
@@ -141,16 +149,19 @@ export default function PostCard({ post }) {
                             onClick={handleLike}
                             className={`flex items-center gap-1 text-sm transition-colors ${
                                 post.liked
-                                    ? 'text-red-500 hover:text-red-400' // いいね済み: 赤
-                                    : 'text-gray-400 hover:text-red-400' // 未いいね: グレー
+                                    ? 'text-red-500 hover:text-red-400'
+                                    : 'text-gray-400 hover:text-red-400'
                             }`}
                             aria-label={post.liked ? 'いいねを取り消す' : 'いいねする'}
                         >
-                            {/* ハートアイコン */}
+                            {/* ハートアイコン
+                                isAnimating が true の間だけ scale-125 を付けて弾む効果を出す
+                                transition-transform で滑らかに動かす */}
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                // いいね済みは塗りつぶし、未いいねはアウトライン
+                                className={`h-5 w-5 transition-transform duration-150 ${
+                                    isAnimating ? 'scale-125' : 'scale-100'
+                                }`}
                                 fill={post.liked ? 'currentColor' : 'none'}
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
