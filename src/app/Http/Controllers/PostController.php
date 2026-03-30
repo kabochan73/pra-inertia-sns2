@@ -6,6 +6,7 @@ use App\Http\Requests\StorePostRequest;
 use App\Models\Post;
 use App\Services\PostService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -23,10 +24,14 @@ class PostController extends Controller
     }
 
     // タイムライン表示
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        // ?q=キーワード があれば検索、なければ全件取得
+        $query = $request->query('q');
+
         return Inertia::render('Dashboard', [
-            'posts' => $this->postService->getTimeline(),
+            'posts' => $this->postService->getTimeline($query),
+            'query' => $query ?? '', // 検索ワードをフロントに返してフォームに表示する
         ]);
     }
 

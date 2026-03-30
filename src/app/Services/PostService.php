@@ -11,10 +11,19 @@ use Illuminate\Support\Facades\Auth;
 class PostService
 {
     // タイムライン用の投稿一覧を取得
-    public function getTimeline(): Collection
+    // $query が渡された場合はタイトルまたは著者名で絞り込む
+    public function getTimeline(?string $query = null): Collection
     {
         return Post::with('user')
             ->withCount('likes')
+            ->when($query, function ($q) use ($query) {
+                // LIKE 検索: タイトルか著者名のどちらかにヒットすれば表示
+                // where + orWhere をグループ化して他の条件と混在しないようにする
+                $q->where(function ($q) use ($query) {
+                    $q->where('book_title', 'like', "%{$query}%")
+                      ->orWhere('book_author', 'like', "%{$query}%");
+                });
+            })
             ->latest()
             ->get()
             ->map(fn(Post $post) => $this->formatPost($post));
