@@ -34,7 +34,7 @@ export default function Dashboard({ posts }) {
                 <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 space-y-6">
 
                     {/* ログイン済みの場合、自分のプロフィール（投稿フォームがある）へ誘導 */}
-                    {isLoggedIn && (
+                    {/* {isLoggedIn && (
                         <div className="text-right">
                             <Link
                                 href={route('users.show', auth.user.id)}
@@ -43,7 +43,7 @@ export default function Dashboard({ posts }) {
                                 レビューを投稿する →
                             </Link>
                         </div>
-                    )}
+                    )} */}
 
                     {/* 投稿一覧 */}
                     {posts.length === 0 ? (
