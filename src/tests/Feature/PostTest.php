@@ -23,7 +23,8 @@ test('ログイン済みなら投稿できる', function () {
             'rating' => 5,
         ]);
 
-    $response->assertRedirect('/dashboard');
+    // 投稿後は自分のプロフィールページにリダイレクトされる
+    $response->assertRedirect("/users/{$user->id}");
     $this->assertDatabaseHas('posts', [
         'user_id' => $user->id,
         'book_title' => 'ハリー・ポッター',

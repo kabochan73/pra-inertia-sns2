@@ -3,13 +3,16 @@ import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 /**
  * 投稿作成ページ
  * ログイン済みユーザーのみアクセス可能（ルートで auth ミドルウェアを適用済み）
  */
 export default function Create() {
+    // ログイン中のユーザーIDを取得（キャンセル時のリダイレクト先に使う）
+    const { auth } = usePage().props;
+
     // useForm: Inertia のフォーム管理フック
     const { data, setData, post, processing, errors, reset } = useForm({
         book_title: '',
@@ -138,6 +141,13 @@ export default function Create() {
 
                             {/* 送信ボタン */}
                             <div className="flex justify-end pt-2">
+                                {/* キャンセル → 自分のプロフィールページへ戻る */}
+                                <Link
+                                    href={route('users.show', auth.user.id)}
+                                    className="text-sm text-gray-500 hover:text-gray-700 self-center mr-4"
+                                >
+                                    キャンセル
+                                </Link>
                                 <PrimaryButton
                                     type="submit"
                                     disabled={processing} // 送信中はボタンを無効化（二重送信防止）
