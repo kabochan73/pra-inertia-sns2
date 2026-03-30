@@ -1,125 +1,101 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import Dropdown from '@/Components/Dropdown';
-import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
-
-    const [showingNavigationDropdown, setShowingNavigationDropdown] =
-        useState(false);
+    const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 justify-between">
-                        <div className="flex">
-                            <div className="flex shrink-0 items-center">
-                                <Link href="/dashboard">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
-                                </Link>
-                            </div>
+        <div className="min-h-screen bg-sky-50">
+            {/* ナビゲーションバー */}
+            <nav className="bg-white border-b border-sky-100 shadow-sm">
+                <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-16 justify-between items-center">
 
-                            <div className="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                                <NavLink
+                        {/* 左: ロゴ + ナビリンク */}
+                        <div className="flex items-center gap-8">
+                            <Link href="/dashboard" className="flex items-center gap-2">
+                                {/* ロゴの代わりにテキストロゴ */}
+                                <span className="text-xl font-extrabold text-sky-500 tracking-tight">
+                                    📚 BookLog
+                                </span>
+                            </Link>
+
+                            {/* PC用ナビリンク */}
+                            <div className="hidden sm:flex items-center gap-1">
+                                <Link
                                     href={route('dashboard')}
-                                    active={route().current('dashboard')}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                                        route().current('dashboard')
+                                            ? 'bg-sky-100 text-sky-700'
+                                            : 'text-gray-500 hover:text-sky-600 hover:bg-sky-50'
+                                    }`}
                                 >
                                     タイムライン
-                                </NavLink>
-                                {/* 自分のプロフィールページへのリンク */}
-                                <NavLink
+                                </Link>
+                                <Link
                                     href={route('users.show', user.id)}
-                                    active={route().current('users.show', user.id)}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                                        route().current('users.show', user.id)
+                                            ? 'bg-sky-100 text-sky-700'
+                                            : 'text-gray-500 hover:text-sky-600 hover:bg-sky-50'
+                                    }`}
                                 >
                                     マイページ
-                                </NavLink>
+                                </Link>
                             </div>
                         </div>
 
-                        <div className="hidden sm:ms-6 sm:flex sm:items-center">
-                            <div className="relative ms-3">
-                                <Dropdown>
-                                    <Dropdown.Trigger>
-                                        <span className="inline-flex rounded-md">
-                                            <button
-                                                type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
-                                            >
-                                                {user.name}
+                        {/* 右: 投稿ボタン + ユーザーメニュー */}
+                        <div className="hidden sm:flex items-center gap-3">
+                            {/* 投稿ボタン */}
+                            <Link
+                                href={route('posts.create')}
+                                className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-full transition-colors shadow-sm"
+                            >
+                                ＋ 投稿する
+                            </Link>
 
-                                                <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    viewBox="0 0 20 20"
-                                                    fill="currentColor"
-                                                >
-                                                    <path
-                                                        fillRule="evenodd"
-                                                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                        clipRule="evenodd"
-                                                    />
-                                                </svg>
-                                            </button>
-                                        </span>
-                                    </Dropdown.Trigger>
+                            {/* ユーザードロップダウン */}
+                            <Dropdown>
+                                <Dropdown.Trigger>
+                                    {/* アバター: 頭文字を丸く表示 */}
+                                    <button className="w-9 h-9 rounded-full bg-sky-400 text-white font-bold text-sm flex items-center justify-center hover:bg-sky-500 transition-colors">
+                                        {user.name.charAt(0).toUpperCase()}
+                                    </button>
+                                </Dropdown.Trigger>
 
-                                    <Dropdown.Content>
-                                        <Dropdown.Link
-                                            href={route('profile.edit')}
-                                        >
-                                            Profile
-                                        </Dropdown.Link>
-                                        <Dropdown.Link
-                                            href={route('logout')}
-                                            method="post"
-                                            as="button"
-                                        >
-                                            Log Out
-                                        </Dropdown.Link>
-                                    </Dropdown.Content>
-                                </Dropdown>
-                            </div>
+                                <Dropdown.Content>
+                                    <div className="px-4 py-2 text-xs text-gray-400 border-b border-gray-100">
+                                        {user.name}
+                                    </div>
+                                    <Dropdown.Link href={route('profile.edit')}>
+                                        アカウント設定
+                                    </Dropdown.Link>
+                                    <Dropdown.Link href={route('logout')} method="post" as="button">
+                                        ログアウト
+                                    </Dropdown.Link>
+                                </Dropdown.Content>
+                            </Dropdown>
                         </div>
 
+                        {/* モバイル: ハンバーガーボタン */}
                         <div className="-me-2 flex items-center sm:hidden">
                             <button
-                                onClick={() =>
-                                    setShowingNavigationDropdown(
-                                        (previousState) => !previousState,
-                                    )
-                                }
-                                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none"
+                                onClick={() => setShowingNavigationDropdown((prev) => !prev)}
+                                className="p-2 rounded-md text-gray-400 hover:bg-sky-50 hover:text-sky-600 transition-colors"
                             >
-                                <svg
-                                    className="h-6 w-6"
-                                    stroke="currentColor"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                >
+                                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                                     <path
-                                        className={
-                                            !showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
+                                        className={!showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                        strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                         d="M4 6h16M4 12h16M4 18h16"
                                     />
                                     <path
-                                        className={
-                                            showingNavigationDropdown
-                                                ? 'inline-flex'
-                                                : 'hidden'
-                                        }
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth="2"
+                                        className={showingNavigationDropdown ? 'inline-flex' : 'hidden'}
+                                        strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                         d="M6 18L18 6M6 6l12 12"
                                     />
                                 </svg>
@@ -128,57 +104,32 @@ export default function AuthenticatedLayout({ header, children }) {
                     </div>
                 </div>
 
-                <div
-                    className={
-                        (showingNavigationDropdown ? 'block' : 'hidden') +
-                        ' sm:hidden'
-                    }
-                >
-                    <div className="space-y-1 pb-3 pt-2">
-                        <ResponsiveNavLink
-                            href={route('dashboard')}
-                            active={route().current('dashboard')}
-                        >
+                {/* モバイルメニュー */}
+                <div className={(showingNavigationDropdown ? 'block' : 'hidden') + ' sm:hidden border-t border-sky-100'}>
+                    <div className="space-y-1 px-4 py-3">
+                        <ResponsiveNavLink href={route('dashboard')} active={route().current('dashboard')}>
                             タイムライン
                         </ResponsiveNavLink>
-                        {/* モバイル用: 自分のプロフィールページへのリンク */}
-                        <ResponsiveNavLink
-                            href={route('users.show', user.id)}
-                            active={route().current('users.show', user.id)}
-                        >
+                        <ResponsiveNavLink href={route('users.show', user.id)} active={route().current('users.show', user.id)}>
                             マイページ
                         </ResponsiveNavLink>
+                        <ResponsiveNavLink href={route('posts.create')}>
+                            投稿する
+                        </ResponsiveNavLink>
                     </div>
-
-                    <div className="border-t border-gray-200 pb-1 pt-4">
-                        <div className="px-4">
-                            <div className="text-base font-medium text-gray-800">
-                                {user.name}
-                            </div>
-                            <div className="text-sm font-medium text-gray-500">
-                                {user.email}
-                            </div>
-                        </div>
-
-                        <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink href={route('profile.edit')}>
-                                Profile
-                            </ResponsiveNavLink>
-                            <ResponsiveNavLink
-                                method="post"
-                                href={route('logout')}
-                                as="button"
-                            >
-                                Log Out
-                            </ResponsiveNavLink>
-                        </div>
+                    <div className="border-t border-sky-100 px-4 py-3 space-y-1">
+                        <p className="text-sm font-medium text-gray-700">{user.name}</p>
+                        <p className="text-xs text-gray-400">{user.email}</p>
+                        <ResponsiveNavLink href={route('profile.edit')}>アカウント設定</ResponsiveNavLink>
+                        <ResponsiveNavLink method="post" href={route('logout')} as="button">ログアウト</ResponsiveNavLink>
                     </div>
                 </div>
             </nav>
 
+            {/* ページヘッダー */}
             {header && (
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <header className="bg-white border-b border-sky-100">
+                    <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 lg:px-8">
                         {header}
                     </div>
                 </header>

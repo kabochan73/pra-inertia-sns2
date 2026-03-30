@@ -1,36 +1,30 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
 import { Link } from '@inertiajs/react';
 
-/**
- * 未ログインユーザー向けのレイアウト
- * ナビバー（ロゴ + ログイン/登録リンク）とコンテンツエリアを提供する
- *
- * @param {ReactNode} header   - ページタイトルなどのヘッダー内容
- * @param {ReactNode} children - メインコンテンツ
- */
 export default function PublicLayout({ header, children }) {
     return (
-        <div className="min-h-screen bg-gray-100">
+        <div className="min-h-screen bg-sky-50">
             {/* ナビゲーションバー */}
-            <nav className="border-b border-gray-100 bg-white">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <nav className="bg-white border-b border-sky-100 shadow-sm">
+                <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
-                        {/* ロゴ */}
-                        <Link href="/">
-                            <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                        {/* テキストロゴ */}
+                        <Link href="/" className="flex items-center gap-2">
+                            <span className="text-xl font-extrabold text-sky-500 tracking-tight">
+                                📚 BookLog
+                            </span>
                         </Link>
 
-                        {/* ログイン / 新規登録リンク */}
-                        <div className="flex items-center gap-4">
+                        {/* ログイン / 新規登録 */}
+                        <div className="flex items-center gap-3">
                             <Link
                                 href={route('login')}
-                                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                                className="px-4 py-2 text-sm font-medium text-sky-600 hover:text-sky-700 transition-colors"
                             >
                                 ログイン
                             </Link>
                             <Link
                                 href={route('register')}
-                                className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+                                className="px-4 py-2 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-full transition-colors shadow-sm"
                             >
                                 新規登録
                             </Link>
@@ -39,16 +33,15 @@ export default function PublicLayout({ header, children }) {
                 </div>
             </nav>
 
-            {/* ページヘッダー（タイトルなど） */}
+            {/* ページヘッダー */}
             {header && (
-                <header className="bg-white shadow">
-                    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+                <header className="bg-white border-b border-sky-100">
+                    <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 lg:px-8">
                         {header}
                     </div>
                 </header>
             )}
 
-            {/* メインコンテンツ */}
             <main>{children}</main>
         </div>
     );
