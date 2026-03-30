@@ -16,6 +16,12 @@ class PostController extends Controller
         private readonly PostService $postService // DIコンテナが自動でインスタンスを注入してくれる
     ) {}
 
+    // 投稿フォームページを表示
+    public function create(): Response
+    {
+        return Inertia::render('Posts/Create');
+    }
+
     // タイムライン表示
     public function index(): Response
     {
@@ -29,7 +35,8 @@ class PostController extends Controller
     {
         $this->postService->store($request);
 
-        return redirect()->route('dashboard');
+        // 投稿後は自分のプロフィールページへリダイレクト
+        return redirect()->route('users.show', Auth::id());
     }
 
     // 投稿削除（自分の投稿のみ）

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Requests\StorePostRequest;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,6 +15,17 @@ class PostService
     {
         return Post::with('user')
             ->withCount('likes')
+            ->latest()
+            ->get()
+            ->map(fn(Post $post) => $this->formatPost($post));
+    }
+
+    // 特定ユーザーの投稿一覧を取得（プロフィールページ用）
+    public function getPostsByUser(User $user): Collection
+    {
+        return Post::with('user')
+            ->withCount('likes')
+            ->where('user_id', $user->id) // そのユーザーの投稿のみ絞り込む
             ->latest()
             ->get()
             ->map(fn(Post $post) => $this->formatPost($post));
